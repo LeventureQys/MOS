@@ -1,0 +1,2 @@
+mos_finetune_ssl_main/fairseq/wav2vec_small.pt
+mos_finetune_ssl_main/pretrained/ckpt_w2vsmall

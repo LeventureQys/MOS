@@ -149,6 +149,7 @@ def main(args):
     if args.csv_path:
         csv_path = args.csv_path
         df.to_csv(csv_path)
+        return df
     else:
         return df # print(df.describe())
 

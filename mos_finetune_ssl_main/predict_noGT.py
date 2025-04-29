@@ -18,7 +18,9 @@ import numpy as np
 import scipy.stats
 import datetime
 import time
-
+import urllib
+import tarfile
+import shutil
 def unixnow():
     return str(int(time.mktime(datetime.datetime.now().timetuple())))
 
@@ -38,17 +40,56 @@ def main(args):
     ## 1. download the base model from fairseq
     if not os.path.exists('mos_finetune_ssl_main/fairseq/wav2vec_small.pt'):
         os.system('mkdir -p mos_finetune_ssl_main/fairseq')
-        os.system('wget https://dl.fbaipublicfiles.com/fairseq/wav2vec/wav2vec_small.pt -P mos_finetune_ssl_main/fairseq')
-        os.system('wget https://raw.githubusercontent.com/pytorch/fairseq/main/LICENSE -P mos_finetune_ssl_main/fairseq/')
+        os.system('wget -e use_proxy=yes -e http_proxy=http://127.0.0.1:7890 https://dl.fbaipublicfiles.com/fairseq/wav2vec/wav2vec_small.pt -P mos_finetune_ssl_main/fairseq')
+        os.system('wget -e use_proxy=yes -e http_proxy=http://127.0.0.1:7890 https://raw.githubusercontent.com/pytorch/fairseq/main/LICENSE -P mos_finetune_ssl_main/fairseq/')
 
     ## 2. download the finetuned checkpoint
     if not os.path.exists('mos_finetune_ssl_main/pretrained/ckpt_w2vsmall'):
-        os.system('mkdir -p mos_finetune_ssl_main/pretrained')
-        os.system('wget https://zenodo.org/record/6785056/files/ckpt_w2vsmall.tar.gz')
-        os.system('tar -zxvf ckpt_w2vsmall.tar.gz')
-        os.system('mv ckpt_w2vsmall mos_finetune_ssl_main/pretrained/')
-        os.system('rm ckpt_w2vsmall.tar.gz')
-        os.system('cp mos_finetune_ssl_main/fairseq/LICENSE mos_finetune_ssl_main/pretrained/')
+        # 创建目录（Windows兼容）
+        os.makedirs('mos_finetune_ssl_main/pretrained', exist_ok=True)
+        
+        # 设置代理（如果需要）
+        proxy_handler = urllib.request.ProxyHandler({"http": "http://127.0.0.1:7890", "https": "http://127.0.0.1:7890"})
+        opener = urllib.request.build_opener(proxy_handler)
+        urllib.request.install_opener(opener)
+        
+        try:
+            # 下载文件（Windows原生方式）
+            print("Downloading checkpoint...")
+            tar_path = 'ckpt_w2vsmall.tar.gz'
+            urllib.request.urlretrieve(
+                'https://zenodo.org/record/6785056/files/ckpt_w2vsmall.tar.gz',
+                tar_path
+            )
+            
+            # 解压文件（Python原生方式）
+            print("Extracting archive...")
+            with tarfile.open(tar_path, 'r:gz') as tar:
+                tar.extractall()
+            
+            # 移动文件夹（Windows兼容）
+            if os.path.exists('ckpt_w2vsmall'):
+                shutil.move('ckpt_w2vsmall', 'mos_finetune_ssl_main/pretrained/')
+            
+            # 删除压缩包（Windows兼容）
+            if os.path.exists(tar_path):
+                os.remove(tar_path)
+            
+            # 复制LICENSE文件（Windows兼容）
+            src_license = 'mos_finetune_ssl_main/fairseq/LICENSE'
+            dst_license = 'mos_finetune_ssl_main/pretrained/LICENSE'
+            if os.path.exists(src_license):
+                shutil.copy2(src_license, dst_license)
+                
+            print("Checkpoint downloaded successfully!")
+            
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            # 清理可能残留的文件
+            if os.path.exists(tar_path):
+                os.remove(tar_path)
+            if os.path.exists('ckpt_w2vsmall'):
+                shutil.rmtree('ckpt_w2vsmall', ignore_errors=True)
     
     cp_path = args.fairseq_base_model
     my_checkpoint = args.finetuned_checkpoint
@@ -128,5 +169,5 @@ def main(args):
     # return predictions
     return output
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+      main()
