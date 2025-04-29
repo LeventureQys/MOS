@@ -102,7 +102,9 @@ def process_waveform(waveform, sampling_rate,wavpath):
     return df
 
 if __name__ == "__main__":
-    wavdir = "D:/AudioSample/white"
+    
+    wavdir = "D:/Temp/sample_16k/sample_16k/传统"
+    path_name = "传统"
     df = pd.DataFrame(
         columns=[
             "filename",
@@ -160,7 +162,7 @@ if __name__ == "__main__":
 
     # 重命名列名后输出CSV
     df.rename(columns=column_names, inplace=True)
-    df.to_csv("df_train_white.csv", index=False, encoding='utf-8-sig')  # 使用utf-8-sig支持中文
+    df.to_csv(path_name+".csv", index=False, encoding='utf-8-sig')  # 使用utf-8-sig支持中文
 
     # 设置中文显示和样式（无需交互式后端）
     plt.switch_backend('agg')  # 非交互式后端，适合保存文件
@@ -169,7 +171,7 @@ if __name__ == "__main__":
     
 
     # 创建输出目录（如果不存在）
-    os.makedirs('analysis_results', exist_ok=True)
+    os.makedirs(path_name, exist_ok=True)
 
     # ==================================================================
     # 1. 核心指标对比图
@@ -183,7 +185,7 @@ if __name__ == "__main__":
     plt.xlabel('')
     plt.ylabel('MOS评分')
     plt.xticks(ticks=[0,1,2], labels=['整体质量', '信号质量', '背景质量'])
-    plt.savefig('analysis_results/1_核心指标对比.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path_name+'/1_核心指标对比.png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # ==================================================================
@@ -207,7 +209,7 @@ if __name__ == "__main__":
     ax.set_rlabel_position(30)
     plt.yticks([1,2,3,4,5], ["1","2","3","4","5"], color="grey", size=8)
     plt.ylim(0,5)
-    plt.savefig('analysis_results/2_问题维度雷达图.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path_name+'/2_问题维度雷达图.png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # ==================================================================
@@ -220,7 +222,7 @@ if __name__ == "__main__":
                             alpha=0.7)
     plt.title('音频时长与质量关系\n(气泡大小=断续程度，颜色=噪声程度)')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.savefig('analysis_results/3_时长质量关系图.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path_name+'/3_时长质量关系图.png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # ==================================================================
@@ -233,8 +235,8 @@ if __name__ == "__main__":
     plt.title('各音频文件质量评分热力图')
     plt.xlabel('质量维度')
     plt.ylabel('音频文件')
-    plt.savefig('analysis_results/4_文件质量热力图.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path_name+'/4_文件质量热力图.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-    print("可视化结果已保存至 analysis_results/ 目录：")
-    print(os.listdir('analysis_results'))
+    print("可视化结果已保存至 "+path_name+"/ 目录：")
+    print(os.listdir(path_name))

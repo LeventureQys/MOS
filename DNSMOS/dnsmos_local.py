@@ -51,7 +51,11 @@ class ComputeScore:
 
     def __call__(self, fpath, sampling_rate, is_personalized_MOS):
         if isinstance(fpath, tuple): aud, input_fs = fpath; fpath = aud # fpath=clip is tuple (fpath change to nparray)
-        else: aud, input_fs = sf.read(fpath)
+        else: 
+            aud, input_fs = sf.read(fpath)
+            # 如果音频是立体声，转换为单声道
+            if len(aud.shape) > 1:
+                aud = aud.mean(axis=1)  # 取平均值或只取一个声道
         fs = sampling_rate
         if input_fs != fs:
             audio = librosa.resample(aud, orig_sr=input_fs, target_sr=fs)
